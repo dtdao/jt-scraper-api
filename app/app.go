@@ -16,5 +16,7 @@ func New() *App {
 
 func (a *App) initialRoutes() {
 	a.Router.HandleFunc("/", a.IndexHandler()).Methods("GET")
+	a.Router.HandleFunc("/article", a.GetArticleHandler()).Methods("GET")
+	a.Router.HandleFunc("/articles", a.GetArticlesHandler()).Methods("GET")
 }
 
