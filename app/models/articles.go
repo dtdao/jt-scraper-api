@@ -4,7 +4,7 @@ type Image struct {
 	Caption string
 	Url     string
 }
-type Models struct {
+type Article struct {
 	Title   string
 	Content string
 	Credit  string
