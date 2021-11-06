@@ -24,7 +24,7 @@ func visitContent(collector *colly.Collector, e *colly.HTMLElement) {
 	collector.Visit(link)
 }
 
-func makeArticle(e *colly.HTMLElement) models.Article {
+func makeArticle(e *colly.HTMLElement) (article *models.Article) {
 	var images []models.Image
 	title := e.ChildText("h1")
 	credit := e.ChildText("p.credit")
@@ -53,7 +53,7 @@ func makeArticle(e *colly.HTMLElement) models.Article {
 	}
 
 	content := e.ChildText("#jtarticle > p")
-	data := models.Article{
+	data := &models.Article{
 		Title:   title,
 		Content: content,
 		Credit:  credit,
@@ -65,38 +65,16 @@ func makeArticle(e *colly.HTMLElement) models.Article {
 	return data
 }
 
-func ScrapeUrl(url string) (*models.Article, error) {
+func ScrapeUrl(url string) (a *models.Article, e error) {
 	c := makeCollector()
 	articleCollector := c.Clone()
 
-	var article models.Article
+	var article *models.Article
 	articleCollector.OnHTML("div.main", func(e *colly.HTMLElement) {
 		article = makeArticle(e)
 	})
 	if err := articleCollector.Visit(url); err != nil {
 		return nil, err
 	}
-	return &article, nil
-	//
-	//// lead stories
-	//c.OnHTML("div.lead-stories > a.wrapper-link", func(e *colly.HTMLElement) {
-	//	visitContent(articleCollector, e)
-	//})
-	//c.OnHTML("div.top-stories > a.wrapper-link.top-story", func(e *colly.HTMLElement) {
-	//	visitContent(articleCollector, e)
-	//})
-	//c.OnHTML("div.editors-picks > a.wrapper-link", func(e *colly.HTMLElement) {
-	//	visitContent(articleCollector, e)
-	//})
-	//c.OnHTML("div.featured > a.wrapper-link", func(e *colly.HTMLElement) {
-	//	visitContent(articleCollector, e)
-	//})
-	//
-	//c.OnHTML("ul.module_articles > li.index-loop-article > a", func(e *colly.HTMLElement) {
-	//	visitContent(articleCollector, e)
-	//})
-	//articleCollector.OnHTML("div.main", func(e *colly.HTMLElement) {
-	//	makeArticle(e)
-	//})
-	//return nil
+	return article, nil
 }
