@@ -26,7 +26,8 @@ func (a *App) GetArticleHandler() http.HandlerFunc {
 func (a *App) GetArticlesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var article *models.Article
-		article, _ = ScrapeUrl("https://www.japantimes.co.jp/news/2021/11/05/national/ronapreve-covid-drug/")
+		articleUrl := r.URL.Query().Get("article")
+		article, _ = ScrapeUrl(articleUrl)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(200)

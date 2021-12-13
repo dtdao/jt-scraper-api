@@ -17,7 +17,7 @@ func New() *App {
 func (a *App) initialRoutes() {
 	api := a.Router.PathPrefix("/api/v1").Subrouter()
 	api.HandleFunc("/", a.IndexHandler()).Methods("GET")
-	api.HandleFunc("/article", a.GetArticleHandler()).Methods("GET")
-	api.HandleFunc("/articles", a.GetArticlesHandler()).Methods("GET")
+	api.HandleFunc("/articles", a.GetArticleHandler()).Methods("GET")
+	api.HandleFunc("/article", a.GetArticlesHandler()).Methods("GET")
 }
 
