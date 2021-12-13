@@ -16,14 +16,14 @@ func (a *App) IndexHandler() http.HandlerFunc {
 	}
 }
 
-func (a *App) GetArticleHandler() http.HandlerFunc {
+func (a *App) GetArticlesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if _, err := fmt.Fprintf(w, "This is the handler for getting and scrapping an article"); err != nil {
 			log.Fatal(err)
 		}
 	}
 }
-func (a *App) GetArticlesHandler() http.HandlerFunc {
+func (a *App) GetArticleHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var article *models.Article
 		articleUrl := r.URL.Query().Get("article")
