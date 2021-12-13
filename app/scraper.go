@@ -78,3 +78,49 @@ func ScrapeUrl(url string) (a *models.Article, e error) {
 	}
 	return article, nil
 }
+
+func ScrapeTodaysMainArticles() (a []*models.Article, e error) {
+	var articles []*models.Article
+	var article *models.Article
+	c := makeCollector()
+	articleCollector := c.Clone()
+	// Lead stories
+	c.OnHTML("div.lead-stories > a.wrapper-link", func(e *colly.HTMLElement) {
+		visitContent(articleCollector, e)
+	})
+
+	// Top stories
+	c.OnHTML("div.top-stories > a.wrapper-link.top-story", func(e *colly.HTMLElement) {
+		visitContent(articleCollector, e)
+	})
+
+	// Editor picks
+	c.OnHTML("div.editors-picks > a.wrapper-link", func(e *colly.HTMLElement) {
+		visitContent(articleCollector, e)
+	})
+
+	/**
+	  Japantimes <div.main-content> is separated into different <section>
+	  Each section consist of a feature article <div.featured>
+	  A subsection list section of articles that relates to that section <ul
+	*/
+	c.OnHTML("div.featured > > a.wrapper-link", func(e *colly.HTMLElement) {
+		visitContent(articleCollector, e)
+
+	})
+
+	c.OnHTML("ul.module_articles > li.index-loop-article > a", func(e *colly.HTMLElement) {
+		visitContent(articleCollector, e)
+	})
+	/**
+	End of section collector.
+	*/
+
+	articleCollector.OnHTML("div.main", func(e *colly.HTMLElement) {
+		article = makeArticle(e)
+	})
+
+	c.Visit(japanTimes)
+	articles = append(articles, article)
+	return articles, nil
+}

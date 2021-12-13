@@ -18,9 +18,15 @@ func (a *App) IndexHandler() http.HandlerFunc {
 
 func (a *App) GetArticlesHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if _, err := fmt.Fprintf(w, "This is the handler for getting and scrapping an article"); err != nil {
-			log.Fatal(err)
-		}
+		var articles []*models.Article
+		//if _, err := fmt.Fprintf(w, "This is the handler for getting and scrapping an article"); err != nil {
+		//	log.Fatal("error")
+		//}
+		articles, _ = ScrapeTodaysMainArticles()
+		fmt.Println(articles)
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(articles)
 	}
 }
 func (a *App) GetArticleHandler() http.HandlerFunc {
@@ -30,7 +36,7 @@ func (a *App) GetArticleHandler() http.HandlerFunc {
 		article, _ = ScrapeUrl(articleUrl)
 
 		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(article)
 	}
 }
