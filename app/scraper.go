@@ -18,13 +18,18 @@ func makeCollector() (collector *colly.Collector) {
 	return c
 }
 
-func visitContent(collector *colly.Collector, e *colly.HTMLElement) {
+func visitContent(collector *colly.Collector, e *colly.HTMLElement) (a models.Article) {
+	var article models.Article
 	link := e.Attr("href")
 	link = e.Request.AbsoluteURL(link)
 	collector.Visit(link)
+	collector.OnHTML("div.main", func(e *colly.HTMLElement) {
+		article = makeArticle(e)
+	})
+	return article
 }
 
-func makeArticle(e *colly.HTMLElement) (article *models.Article) {
+func makeArticle(e *colly.HTMLElement) (article models.Article) {
 	var images []models.Image
 	title := e.ChildText("h1")
 	credit := e.ChildText("p.credit")
@@ -53,7 +58,7 @@ func makeArticle(e *colly.HTMLElement) (article *models.Article) {
 	}
 
 	content := e.ChildText("#jtarticle > p")
-	data := &models.Article{
+	data := models.Article{
 		Title:   title,
 		Content: content,
 		Credit:  credit,
@@ -65,62 +70,57 @@ func makeArticle(e *colly.HTMLElement) (article *models.Article) {
 	return data
 }
 
-func ScrapeUrl(url string) (a *models.Article, e error) {
+func ScrapeUrl(url string) (a models.Article, e error) {
 	c := makeCollector()
 	articleCollector := c.Clone()
 
-	var article *models.Article
+	var article models.Article
 	articleCollector.OnHTML("div.main", func(e *colly.HTMLElement) {
 		article = makeArticle(e)
+		fmt.Println()
 	})
-	if err := articleCollector.Visit(url); err != nil {
-		return nil, err
-	}
+	//if err := articleCollector.Visit(url); err != nil {
+	//	return nil, err
+	//}
 	return article, nil
 }
 
-func ScrapeTodaysMainArticles() (a []*models.Article, e error) {
-	var articles []*models.Article
-	var article *models.Article
+func ScrapeTodaysMainArticles() (a []models.Article, e error) {
+	var articles []models.Article
+	var article models.Article
 	c := makeCollector()
 	articleCollector := c.Clone()
 	// Lead stories
 	c.OnHTML("div.lead-stories > a.wrapper-link", func(e *colly.HTMLElement) {
-		visitContent(articleCollector, e)
+		article = visitContent(articleCollector, e)
 	})
 
 	// Top stories
 	c.OnHTML("div.top-stories > a.wrapper-link.top-story", func(e *colly.HTMLElement) {
-		visitContent(articleCollector, e)
+		article = visitContent(articleCollector, e)
 	})
 
-	// Editor picks
+	//// Editor picks
 	c.OnHTML("div.editors-picks > a.wrapper-link", func(e *colly.HTMLElement) {
-		visitContent(articleCollector, e)
+		article = visitContent(articleCollector, e)
 	})
 
 	/**
-	  Japantimes <div.main-content> is separated into different <section>
-	  Each section consist of a feature article <div.featured>
-	  A subsection list section of articles that relates to that section <ul
+	 Japantimes <div.main-content> is separated into different <section>
+	 Each section consist of a feature article <div.featured>
+	 A subsection list section of articles that relates to that section <ul
 	*/
 	c.OnHTML("div.featured > > a.wrapper-link", func(e *colly.HTMLElement) {
-		visitContent(articleCollector, e)
-
+		article = visitContent(articleCollector, e)
 	})
 
 	c.OnHTML("ul.module_articles > li.index-loop-article > a", func(e *colly.HTMLElement) {
-		visitContent(articleCollector, e)
+		article = visitContent(articleCollector, e)
 	})
 	/**
 	End of section collector.
 	*/
 
-	articleCollector.OnHTML("div.main", func(e *colly.HTMLElement) {
-		article = makeArticle(e)
-	})
-
 	c.Visit(japanTimes)
-	articles = append(articles, article)
 	return articles, nil
 }
